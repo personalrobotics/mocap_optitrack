@@ -144,6 +144,15 @@ void processMocapData( const char** mocap_model,
               }
             }
           }
+          if( format.model.numOtherMarkers > 0)
+          {
+            int numOtherMarkers = format.model.numOtherMarkers;
+            ROS_INFO("NumOtherMarkers: %d", numOtherMarkers);
+            for( int i = 0; i < numOtherMarkers; ++i)
+            {
+              ROS_INFO("X %f Y %f Z %f", format.model.otherMarkers[i].positionX, format.model.otherMarkers[i].positionY, format.model.otherMarkers[i].positionZ);
+            }
+          }
         }
 
         if (header == NAT_PINGRESPONSE) {
