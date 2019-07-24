@@ -44,6 +44,7 @@
 #include <iostream>
 #include <string>
 #include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/PointStamped.h>
 
 using namespace std;
 
@@ -51,9 +52,11 @@ using namespace std;
 class Marker
 {
   public:
-    float positionX;
-    float positionY;
-    float positionZ;
+    float x;
+    float y;
+    float z;
+
+    const geometry_msgs::PointStamped get_ros_point();
 };
 
 class Pose

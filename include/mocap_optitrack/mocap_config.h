@@ -78,7 +78,25 @@ class PublishedRigidBody
   void publish(RigidBody &);
 };
 
+class PublishedMarker
+{
+private:
+  ros::NodeHandle n;
+
+  std::string topic;
+  std::string frame_id;
+
+  ros::Publisher pub;
+  Marker currentMarker;
+
+public:
+  PublishedMarker(XmlRpc::XmlRpcValue &);
+  void publish();
+};
+
 typedef std::map<int, PublishedRigidBody> RigidBodyMap;
 typedef std::pair<int, PublishedRigidBody> RigidBodyItem;
+typedef std::map<int, PublishedMarker> MarkerMap;
+typedef std::pair<int, PublishedMarker> MarkerItem;
 
 #endif  // __MOCAP_CONFIG_H__

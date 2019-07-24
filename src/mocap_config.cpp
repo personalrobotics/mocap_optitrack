@@ -48,11 +48,17 @@
 #include <tf/transform_datatypes.h>
 #include "mocap_optitrack/mocap_config.h"
 
+// RigidBody param names
 const std::string POSE_TOPIC_PARAM_NAME = "pose";
 const std::string POSE2D_TOPIC_PARAM_NAME = "pose2d";
 const std::string CHILD_FRAME_ID_PARAM_NAME = "child_frame_id";
 const std::string PARENT_FRAME_ID_PARAM_NAME = "parent_frame_id";
 const std::string NEW_COORDINATE_FRAME_PARAM_NAME = "use_new_coordinates";
+
+// Marker param names
+const std::string MARKER_TOPIC_PARAM_NAME = "topic_name";
+const std::string MARKER_INIT_POS_PARAM_NAME = "init_pos";
+const std::string MARKER_FRAME_PARAM_NAME = "frame_id";
 
 PublishedRigidBody::PublishedRigidBody(XmlRpc::XmlRpcValue &config_node)
 {
@@ -153,4 +159,37 @@ bool PublishedRigidBody::validateParam(XmlRpc::XmlRpcValue &config_node, const s
   }
 
   return false;
+}
+
+
+PublishedMarker::PublishedMarker(XmlRpc::XmlRpcValue &config_node)
+{
+  topic = (std::string&) config_node[MARKER_TOPIC_PARAM_NAME];
+  frame_id = (std::string&) config_node[MARKER_FRAME_PARAM_NAME];
+  pub = n.advertise<geometry_msgs::PointStamped>(topic, 1000);
+
+
+  XmlRpc::XmlRpcValue init_pos_spec = config_node[MARKER_INIT_POS_PARAM_NAME];
+  ROS_ASSERT(init_pos_spec.getType() == XmlRpc::XmlRpcValue::TypeArray);
+  ROS_ASSERT(init_pos_spec.size() == 3);
+  std::vector<float> init_pos(3);
+  for (int i = 0; i < 3; ++i)
+  {
+    // If the following assertion failed, check if the numbers have '.'
+    ROS_ASSERT(init_pos_spec[i].getType() == XmlRpc::XmlRpcValue::TypeDouble);
+    init_pos[i] = static_cast<double>(init_pos_spec[i]);
+  }
+  currentMarker = Marker();
+  currentMarker.x = init_pos[0];
+  currentMarker.y = init_pos[1];
+  currentMarker.z = init_pos[2];
+
+  // TODO: exception handling
+}
+
+void PublishedMarker::publish()
+{
+  geometry_msgs::PointStamped position = currentMarker.get_ros_point();
+  position.header.frame_id = frame_id;
+  pub.publish(position);
 }

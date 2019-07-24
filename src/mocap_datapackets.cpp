@@ -7,6 +7,17 @@
 #include <ros/console.h>
 using namespace std;
 
+const geometry_msgs::PointStamped Marker::get_ros_point()
+{
+  geometry_msgs::PointStamped ros_point;
+  ros_point.header.stamp = ros::Time::now();
+  ros_point.point.x = x;
+  ros_point.point.y = y;
+  ros_point.point.z = z;
+  return ros_point;
+}
+
+
 RigidBody::RigidBody()
   : NumberOfMarkers(0), marker(0)
 {
@@ -21,6 +32,7 @@ const geometry_msgs::PoseStamped RigidBody::get_ros_pose(bool newCoordinates)
 {
   geometry_msgs::PoseStamped ros_pose;
   ros_pose.header.stamp = ros::Time::now();
+
   if (newCoordinates)
   {
     // Motive 1.7+ coordinate system
@@ -36,13 +48,14 @@ const geometry_msgs::PoseStamped RigidBody::get_ros_pose(bool newCoordinates)
   else
   {
     // y & z axes are swapped in the Optitrack coordinate system
+    // We DON't transform the pose, relying on ROS tf tree.
     ros_pose.pose.position.x = pose.position.x;
-    ros_pose.pose.position.y = -pose.position.z;
-    ros_pose.pose.position.z = pose.position.y;
+    ros_pose.pose.position.y = pose.position.y;
+    ros_pose.pose.position.z = pose.position.z;
 
     ros_pose.pose.orientation.x = pose.orientation.x;
-    ros_pose.pose.orientation.y = -pose.orientation.z;
-    ros_pose.pose.orientation.z = pose.orientation.y;
+    ros_pose.pose.orientation.y = pose.orientation.y;
+    ros_pose.pose.orientation.z = pose.orientation.z;
     ros_pose.pose.orientation.w = pose.orientation.w;
   }
   return ros_pose;
@@ -178,9 +191,9 @@ void MoCapDataFormat::parse()
     {
       // read marker positions
       read_and_seek(model.markerSets[i].markers[k]);
-      float x = model.markerSets[i].markers[k].positionX;
-      float y = model.markerSets[i].markers[k].positionY;
-      float z = model.markerSets[i].markers[k].positionZ;
+      float x = model.markerSets[i].markers[k].x;
+      float y = model.markerSets[i].markers[k].y;
+      float z = model.markerSets[i].markers[k].z;
       ROS_DEBUG("\t marker %d: [x=%3.2f,y=%3.2f,z=%3.2f]", k, x, y, z);
     }
   }

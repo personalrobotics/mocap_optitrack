@@ -30,6 +30,7 @@ const std::string MULTICAST_IP_DEFAULT = "224.0.0.1";
 
 const std::string MOCAP_MODEL_KEY = "mocap_model";
 const std::string RIGID_BODIES_KEY = "rigid_bodies";
+const std::string MARKER_KEY = "markers";
 const char ** DEFAULT_MOCAP_MODEL = OBJECT;
 //const char ** DEFAULT_MOCAP_MODEL = SKELETON_WITHOUT_TOES;
 
@@ -77,8 +78,15 @@ typedef struct
 
 ////////////////////////////////////////////////////////////////////////
 
+void trackMarkers(int numMarkers, Marker* mocap_markers, MarkerMap& published_markers)
+{
+}
+
+////////////////////////////////////////////////////////////////////////
+
 void processMocapData( const char** mocap_model,
                        RigidBodyMap& published_rigid_bodies,
+                       MarkerMap& published_markers,
                        const std::string& multicast_ip)
 {
   UdpMulticastSocket multicast_client_socket( LOCAL_PORT, multicast_ip );
@@ -131,7 +139,8 @@ void processMocapData( const char** mocap_model,
           packetread = true;
           numberOfPackets++;
 
-          if( format.model.numRigidBodies > 0 )
+          // Update rigid body information
+          if( format.model.numRigidBodies > 0 && published_rigid_bodies.size() > 0)
           {
             for( int i = 0; i < format.model.numRigidBodies; i++ )
             {
@@ -144,14 +153,21 @@ void processMocapData( const char** mocap_model,
               }
             }
           }
-          if( format.model.numOtherMarkers > 0)
+
+          // Process other marker information
+          if( format.model.numOtherMarkers > 0 && published_markers.size() > 0)
           {
             int numOtherMarkers = format.model.numOtherMarkers;
-            ROS_INFO("NumOtherMarkers: %d", numOtherMarkers);
-            for( int i = 0; i < numOtherMarkers; ++i)
-            {
-              ROS_INFO("X %f Y %f Z %f", format.model.otherMarkers[i].positionX, format.model.otherMarkers[i].positionY, format.model.otherMarkers[i].positionZ);
-            }
+            trackMarkers(numOtherMarkers, format.model.otherMarkers, published_markers);
+
+            for (std::map<int, PublishedMarker>::iterator it=published_markers.begin(); it!=published_markers.end(); ++it)
+              it->second.publish();
+
+            //ROS_DEBUG("NumOtherMarkers: %d", numOtherMarkers);
+            //for( int i = 0; i < numOtherMarkers; ++i)
+            //{
+            //  ROS_DEBUG("X %f Y %f Z %f", format.model.otherMarkers[i].x, format.model.otherMarkers[i].y, format.model.otherMarkers[i].z);
+            //}
           }
         }
 
@@ -215,8 +231,8 @@ int main( int argc, char* argv[] )
     ROS_WARN_STREAM("Could not get multicast address, using default: " << multicast_ip);
   }
 
+  // Add each rigid body in config to the RigidBodyMap
   RigidBodyMap published_rigid_bodies;
-
   if (n.hasParam(RIGID_BODIES_KEY))
   {
       XmlRpc::XmlRpcValue body_list;
@@ -240,8 +256,37 @@ int main( int argc, char* argv[] )
       }
   }
 
+  // Add each marker in config to the MarkerMap
+  MarkerMap published_markers;
+  if (n.hasParam(MARKER_KEY))
+  {
+      XmlRpc::XmlRpcValue marker_list;
+      n.getParam(MARKER_KEY, marker_list);
+      if (marker_list.getType() == XmlRpc::XmlRpcValue::TypeStruct && marker_list.size() > 0)
+      {
+          XmlRpc::XmlRpcValue::iterator i;
+          for (i = marker_list.begin(); i != marker_list.end(); ++i) {
+            // TODO:: Parse each config, create MarkerMap type and PublishedMarker Type. Write its publish function.
+              if (i->second.getType() == XmlRpc::XmlRpcValue::TypeStruct) {
+                  PublishedMarker marker(i->second); //TODO
+                  //PublishedRigidBody body(i->second);
+                  string id = (string&) (i->first);
+                  //RigidBodyItem item(atoi(id.c_str()), body);
+                  MarkerItem item(atoi(id.c_str()), marker);
+
+                  //std::pair<RigidBodyMap::iterator, bool> result = published_rigid_bodies.insert(item);
+                  std::pair<MarkerMap::iterator, bool> result = published_markers.insert(item);
+                  if (!result.second)
+                  {
+                      ROS_ERROR("Could not insert configuration for marker ID %s", id.c_str());
+                  }
+              }
+          }
+      }
+  }
+
   // Process mocap data until SIGINT
-  processMocapData(mocap_model, published_rigid_bodies, multicast_ip);
+  processMocapData(mocap_model, published_rigid_bodies, published_markers, multicast_ip);
 
   return 0;
 }
