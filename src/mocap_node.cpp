@@ -21,6 +21,7 @@
 // System includes
 #include <string>
 #include <unistd.h>
+#include <math.h>
 ////////////////////////////////////////////////////////////////////////
 // Constants
 
@@ -78,8 +79,49 @@ typedef struct
 
 ////////////////////////////////////////////////////////////////////////
 
-void trackMarkers(int numMarkers, Marker* mocap_markers, MarkerMap& published_markers)
+float distance_fn(Marker& a, Marker& b)
 {
+  return sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y) + (a.z - b.z) * (a.z - b.z));
+}
+
+void trackMarkers(int num_mocap_markers, Marker* mocap_markers, MarkerMap& published_markers)
+{
+  int n = published_markers.size(), m = num_mocap_markers;
+  if( m < n )
+    ROS_INFO("observed less marker than requested. Problematic");
+
+
+  float** distance = new float*[n];
+  for(int i = 0; i < n; ++i)
+  {
+    distance[i] = new float[m];
+  }
+
+  std::vector<bool> unused(m, true);
+  int minID, i = 0;
+  for(std::map<int, PublishedMarker>::iterator it = published_markers.begin(); it != published_markers.end(); ++it) {
+    Marker & currentMarker = it->second.currentMarker;
+    minID = -1;
+    for(int j = 0; j < m; ++j)
+      if(unused[j]){
+        distance[i][j] = distance_fn(currentMarker, mocap_markers[m]);
+        if(minID == -1 || distance[i][j] < distance[i][minID])
+          minID = j;
+      }
+    if(minID != -1)
+    {
+      it->second.update(mocap_markers[minID]);
+      unused[minID] = false;
+    }
+    ++i;
+  }
+
+
+  //ROS_DEBUG("NumOtherMarkers: %d", numOtherMarkers);
+  //for( int i = 0; i < numOtherMarkers; ++i)
+  //{
+  //  ROS_DEBUG("X %f Y %f Z %f", format.model.otherMarkers[i].x, format.model.otherMarkers[i].y, format.model.otherMarkers[i].z);
+  //}
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -157,17 +199,10 @@ void processMocapData( const char** mocap_model,
           // Process other marker information
           if( format.model.numOtherMarkers > 0 && published_markers.size() > 0)
           {
-            int numOtherMarkers = format.model.numOtherMarkers;
-            trackMarkers(numOtherMarkers, format.model.otherMarkers, published_markers);
+            trackMarkers(format.model.numOtherMarkers, format.model.otherMarkers, published_markers);
 
             for (std::map<int, PublishedMarker>::iterator it=published_markers.begin(); it!=published_markers.end(); ++it)
               it->second.publish();
-
-            //ROS_DEBUG("NumOtherMarkers: %d", numOtherMarkers);
-            //for( int i = 0; i < numOtherMarkers; ++i)
-            //{
-            //  ROS_DEBUG("X %f Y %f Z %f", format.model.otherMarkers[i].x, format.model.otherMarkers[i].y, format.model.otherMarkers[i].z);
-            //}
           }
         }
 

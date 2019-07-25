@@ -87,11 +87,12 @@ private:
   std::string frame_id;
 
   ros::Publisher pub;
-  Marker currentMarker;
 
 public:
+  Marker currentMarker;
   PublishedMarker(XmlRpc::XmlRpcValue &);
   void publish();
+  void update(Marker &);
 };
 
 typedef std::map<int, PublishedRigidBody> RigidBodyMap;

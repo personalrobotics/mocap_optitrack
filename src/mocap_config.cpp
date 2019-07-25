@@ -193,3 +193,8 @@ void PublishedMarker::publish()
   position.header.frame_id = frame_id;
   pub.publish(position);
 }
+
+void PublishedMarker::update(Marker & m)
+{
+  currentMarker = m;
+}
