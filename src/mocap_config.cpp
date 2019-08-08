@@ -184,6 +184,8 @@ PublishedMarker::PublishedMarker(XmlRpc::XmlRpcValue &config_node)
   currentMarker.y = init_pos[1];
   currentMarker.z = init_pos[2];
 
+  disconnectedFrames = 0;
+
   // TODO: exception handling
 }
 

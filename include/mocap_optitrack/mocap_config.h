@@ -90,6 +90,7 @@ private:
 
 public:
   Marker currentMarker;
+  int disconnectedFrames;
   PublishedMarker(XmlRpc::XmlRpcValue &);
   void publish();
   void update(Marker &);

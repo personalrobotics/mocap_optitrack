@@ -2,23 +2,32 @@
 # Definition of all trackable objects
 # Identifier corresponds to Trackable ID set in Tracking Tools
 #
-rigid_bodies:
-    '1':
-        pose: Robot_1/pose
-        pose2d: Robot_1/ground_pose
-        child_frame_id: Robot_1/base_link
-        parent_frame_id: optitrack_natnet
-        use_new_coordinates: false
+#rigid_bodies:
+#    '1':
+#        pose: Robot_1/pose
+#        pose2d: Robot_1/ground_pose
+#        child_frame_id: Robot_1/base_link
+#        parent_frame_id: optitrack_natnet
+#        use_new_coordinates: false
 markers:
     '1':
         topic_name: M1/point
         frame_id: optitrack_natnet
-        init_pos:  [0.0, 0.0, 0.0] # Note this is in optitrack frame, look up the coordinate in Motive
+        init_pos:  [0.0, 0.0, 0.0] # Note this is in optitrack frame, look up the coordinate in Motive Software.
     '2':
         topic_name: M2/point
         frame_id: optitrack_natnet
-        init_pos: [0.18, 0.0, 0.0]
-marker_distance:
+        init_pos: [0.0, 0.0, 0.18]
+    '3':
+        topic_name: M3/point
+        frame_id: optitrack_natnet
+        init_pos: [0.05, 0.0, 0.06]
+    '4':
+        topic_name: M4/point
+        frame_id: optitrack_natnet
+        init_pos: [0.05, 0.0, 0.22]
+marker_distance: # TODO better tracking using known relationship between points
     '1-2': 0.18
+    '3-4': 0.16
 optitrack_config:
         multicast_address: 224.0.0.1

@@ -79,22 +79,26 @@ typedef struct
 
 ////////////////////////////////////////////////////////////////////////
 
-float distance_fn(Marker& a, Marker& b)
+double distance_fn(Marker& a, Marker& b)
 {
-  return sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y) + (a.z - b.z) * (a.z - b.z));
+  double disX = a.x - b.x, disY = a.y - b.y, disZ = a.z - b.z, dis = 0.0;
+  if( abs(disX) > 0.0001)
+    dis += disX * disX;
+  if( abs(disY) > 0.0001)
+    dis += disY * disY;
+  if( abs(disZ) > 0.0001)
+    dis += disZ * disZ;
+  return dis;
 }
 
 void trackMarkers(int num_mocap_markers, Marker* mocap_markers, MarkerMap& published_markers)
 {
   int n = published_markers.size(), m = num_mocap_markers;
-  if( m < n )
-    ROS_INFO("observed less marker than requested. Problematic");
 
-
-  float** distance = new float*[n];
+  double** distance = new double*[n];
   for(int i = 0; i < n; ++i)
   {
-    distance[i] = new float[m];
+    distance[i] = new double[m];
   }
 
   std::vector<bool> unused(m, true);
@@ -104,14 +108,21 @@ void trackMarkers(int num_mocap_markers, Marker* mocap_markers, MarkerMap& publi
     minID = -1;
     for(int j = 0; j < m; ++j)
       if(unused[j]){
-        distance[i][j] = distance_fn(currentMarker, mocap_markers[m]);
+        distance[i][j] = distance_fn(currentMarker, mocap_markers[j]);
         if(minID == -1 || distance[i][j] < distance[i][minID])
           minID = j;
       }
-    if(minID != -1)
+    if(minID != -1 && distance[i][minID] < 0.01)
     {
+      //ROS_INFO("i %d, distance[i][minID] %f", i, distance[i][minID]);
+      //ROS_INFO("i: %f, %f, %f", currentMarker.x, currentMarker.y, currentMarker.z);
       it->second.update(mocap_markers[minID]);
+      //ROS_INFO("min: %f, %f, %f", currentMarker.x, currentMarker.y, currentMarker.z);
       unused[minID] = false;
+    }
+    else
+    {
+      ROS_INFO("Lost marker %d which was at %f, %f, %f", it->first, it->second.currentMarker.x, it->second.currentMarker.y, it->second.currentMarker.z);
     }
     ++i;
   }
