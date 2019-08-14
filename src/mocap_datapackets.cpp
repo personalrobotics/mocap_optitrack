@@ -17,6 +17,15 @@ const geometry_msgs::PointStamped Marker::get_ros_point()
   return ros_point;
 }
 
+const geometry_msgs::Point Marker::get_3d_point()
+{
+  geometry_msgs::Point point;
+  point.x = x;
+  point.y = y;
+  point.z = z;
+  return point;
+}
+
 
 RigidBody::RigidBody()
   : NumberOfMarkers(0), marker(0)

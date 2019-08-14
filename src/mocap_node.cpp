@@ -112,16 +112,19 @@ void trackMarkers(int num_mocap_markers, Marker* mocap_markers, MarkerMap& publi
         if(minID == -1 || distance[i][j] < distance[i][minID])
           minID = j;
       }
-    if(minID != -1 && distance[i][minID] < 0.01)
+    if(minID != -1 && (distance[i][minID] < 0.005 ||
+                       distance[i][minID] < 0.005 + it->second.disconnectedFrames * 0.001))
     {
       //ROS_INFO("i %d, distance[i][minID] %f", i, distance[i][minID]);
       //ROS_INFO("i: %f, %f, %f", currentMarker.x, currentMarker.y, currentMarker.z);
       it->second.update(mocap_markers[minID]);
+      it->second.disconnectedFrames = 0;
       //ROS_INFO("min: %f, %f, %f", currentMarker.x, currentMarker.y, currentMarker.z);
       unused[minID] = false;
     }
     else
     {
+      it->second.disconnectedFrames += 1;
       ROS_INFO("Lost marker %d which was at %f, %f, %f", it->first, it->second.currentMarker.x, it->second.currentMarker.y, it->second.currentMarker.z);
     }
     ++i;
@@ -139,9 +142,11 @@ void trackMarkers(int num_mocap_markers, Marker* mocap_markers, MarkerMap& publi
 
 void processMocapData( const char** mocap_model,
                        RigidBodyMap& published_rigid_bodies,
-                       MarkerMap& published_markers,
+                       PublishedPointArray& published_pArray,
                        const std::string& multicast_ip)
 {
+  MarkerMap& published_markers = published_pArray.published_markers;
+
   UdpMulticastSocket multicast_client_socket( LOCAL_PORT, multicast_ip );
 
   unsigned short payload_len;
@@ -208,12 +213,16 @@ void processMocapData( const char** mocap_model,
           }
 
           // Process other marker information
-          if( format.model.numOtherMarkers > 0 && published_markers.size() > 0)
+          if( format.model.numOtherMarkers > 0 &&
+              published_markers.size() > 0)
           {
             trackMarkers(format.model.numOtherMarkers, format.model.otherMarkers, published_markers);
 
             for (std::map<int, PublishedMarker>::iterator it=published_markers.begin(); it!=published_markers.end(); ++it)
               it->second.publish();
+
+            published_pArray.publish();
+
           }
         }
 
@@ -303,7 +312,8 @@ int main( int argc, char* argv[] )
   }
 
   // Add each marker in config to the MarkerMap
-  MarkerMap published_markers;
+  //MarkerMap published_markers;
+  PublishedPointArray published_pArray(n);
   if (n.hasParam(MARKER_KEY))
   {
       XmlRpc::XmlRpcValue marker_list;
@@ -321,7 +331,8 @@ int main( int argc, char* argv[] )
                   MarkerItem item(atoi(id.c_str()), marker);
 
                   //std::pair<RigidBodyMap::iterator, bool> result = published_rigid_bodies.insert(item);
-                  std::pair<MarkerMap::iterator, bool> result = published_markers.insert(item);
+                  std::pair<MarkerMap::iterator, bool> result =
+                      published_pArray.published_markers.insert(item);
                   if (!result.second)
                   {
                       ROS_ERROR("Could not insert configuration for marker ID %s", id.c_str());
@@ -332,7 +343,7 @@ int main( int argc, char* argv[] )
   }
 
   // Process mocap data until SIGINT
-  processMocapData(mocap_model, published_rigid_bodies, published_markers, multicast_ip);
+  processMocapData(mocap_model, published_rigid_bodies, published_pArray, multicast_ip);
 
   return 0;
 }

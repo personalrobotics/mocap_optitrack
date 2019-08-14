@@ -57,6 +57,7 @@ class Marker
     float z;
 
     const geometry_msgs::PointStamped get_ros_point();
+    const geometry_msgs::Point get_3d_point();
 };
 
 class Pose

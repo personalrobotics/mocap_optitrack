@@ -45,8 +45,10 @@
  */
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/Pose2D.h>
+#include <std_msgs/Header.h>
 #include <tf/transform_datatypes.h>
 #include "mocap_optitrack/mocap_config.h"
+#include "mocap_optitrack/PointArray.h"
 
 // RigidBody param names
 const std::string POSE_TOPIC_PARAM_NAME = "pose";
@@ -166,7 +168,7 @@ PublishedMarker::PublishedMarker(XmlRpc::XmlRpcValue &config_node)
 {
   topic = (std::string&) config_node[MARKER_TOPIC_PARAM_NAME];
   frame_id = (std::string&) config_node[MARKER_FRAME_PARAM_NAME];
-  pub = n.advertise<geometry_msgs::PointStamped>(topic, 1000);
+  pub = n.advertise<geometry_msgs::PointStamped>(topic, 10);
 
 
   XmlRpc::XmlRpcValue init_pos_spec = config_node[MARKER_INIT_POS_PARAM_NAME];
@@ -199,4 +201,22 @@ void PublishedMarker::publish()
 void PublishedMarker::update(Marker & m)
 {
   currentMarker = m;
+}
+
+PublishedPointArray::PublishedPointArray(ros::NodeHandle & nh)
+{
+  topic = "Choppose";
+  numPoints = 4;
+  frame_id = "optitrack_natnet";
+  pub = n.advertise<mocap_optitrack::PointArray>(topic, 10);
+  //TODO actually read config file
+}
+
+void PublishedPointArray::publish()
+{
+  mocap_optitrack::PointArray pArray;
+  pArray.header.stamp = ros::Time::now(); // TODO cache pArray and only update
+  for (std::map<int, PublishedMarker>::iterator it=published_markers.begin(); it!=published_markers.end(); ++it)
+      pArray.points.push_back(it->second.currentMarker.get_3d_point());
+  pub.publish(pArray);
 }

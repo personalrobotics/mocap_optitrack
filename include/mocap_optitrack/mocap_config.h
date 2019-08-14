@@ -96,9 +96,25 @@ public:
   void update(Marker &);
 };
 
+
 typedef std::map<int, PublishedRigidBody> RigidBodyMap;
 typedef std::pair<int, PublishedRigidBody> RigidBodyItem;
 typedef std::map<int, PublishedMarker> MarkerMap;
 typedef std::pair<int, PublishedMarker> MarkerItem;
+
+
+class PublishedPointArray
+{
+private:
+  ros::NodeHandle n;
+  std::string topic;
+  std::string frame_id;
+  ros::Publisher pub;
+public:
+  MarkerMap published_markers;
+  int numPoints;
+  void publish();
+  PublishedPointArray(ros::NodeHandle &);
+};
 
 #endif  // __MOCAP_CONFIG_H__

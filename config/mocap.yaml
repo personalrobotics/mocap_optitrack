@@ -17,15 +17,15 @@ markers:
     '2':
         topic_name: M2/point
         frame_id: optitrack_natnet
-        init_pos: [0.0, 0.0, 0.18]
+        init_pos: [0.0, 0.0, 0.166]
     '3':
         topic_name: M3/point
         frame_id: optitrack_natnet
-        init_pos: [0.05, 0.0, 0.06]
+        init_pos: [0.04, 0.0, -0.05]
     '4':
         topic_name: M4/point
         frame_id: optitrack_natnet
-        init_pos: [0.05, 0.0, 0.22]
+        init_pos: [0.04, 0.0, 0.08]
 marker_distance: # TODO better tracking using known relationship between points
     '1-2': 0.18
     '3-4': 0.16
