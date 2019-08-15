@@ -11,18 +11,17 @@ const geometry_msgs::PointStamped Marker::get_ros_point()
 {
   geometry_msgs::PointStamped ros_point;
   ros_point.header.stamp = ros::Time::now();
-  ros_point.point.x = x;
-  ros_point.point.y = y;
-  ros_point.point.z = z;
+  ros_point.point = get_3d_point();
   return ros_point;
 }
 
 const geometry_msgs::Point Marker::get_3d_point()
 {
+  // Note this transforms the point from Optitrack frame to map frame
   geometry_msgs::Point point;
   point.x = x;
-  point.y = y;
-  point.z = z;
+  point.y = -z;
+  point.z = y;
   return point;
 }
 

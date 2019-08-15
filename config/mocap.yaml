@@ -12,19 +12,19 @@
 markers:
     '1':
         topic_name: M1/point
-        frame_id: optitrack_natnet
+        frame_id: map
         init_pos:  [0.0, 0.0, 0.0] # Note this is in optitrack frame, look up the coordinate in Motive Software.
     '2':
         topic_name: M2/point
-        frame_id: optitrack_natnet
+        frame_id: map
         init_pos: [0.0, 0.0, 0.166]
     '3':
         topic_name: M3/point
-        frame_id: optitrack_natnet
+        frame_id: map
         init_pos: [0.04, 0.0, -0.05]
     '4':
         topic_name: M4/point
-        frame_id: optitrack_natnet
+        frame_id: map
         init_pos: [0.04, 0.0, 0.08]
 marker_distance: # TODO better tracking using known relationship between points
     '1-2': 0.18
