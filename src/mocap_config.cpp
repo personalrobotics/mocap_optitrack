@@ -216,7 +216,7 @@ void PublishedPointArray::publish()
 {
   mocap_optitrack::PointArray pArray;
   pArray.header.stamp = ros::Time::now(); // TODO cache pArray and only update
-  for (std::map<int, PublishedMarker>::iterator it=published_markers.begin(); it!=published_markers.end(); ++it)
-      pArray.points.push_back(it->second.currentMarker.get_3d_point());
+  for (int i = 0; i < published_markers.size(); ++i)
+    pArray.points.push_back(published_markers[i].currentMarker.get_3d_point());
   pub.publish(pArray);
 }

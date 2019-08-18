@@ -101,7 +101,7 @@ typedef std::map<int, PublishedRigidBody> RigidBodyMap;
 typedef std::pair<int, PublishedRigidBody> RigidBodyItem;
 typedef std::map<int, PublishedMarker> MarkerMap;
 typedef std::pair<int, PublishedMarker> MarkerItem;
-
+typedef std::vector<PublishedMarker> MarkerArray;
 
 class PublishedPointArray
 {
@@ -111,7 +111,7 @@ private:
   std::string frame_id;
   ros::Publisher pub;
 public:
-  MarkerMap published_markers;
+  MarkerArray published_markers;
   int numPoints;
   void publish();
   PublishedPointArray(ros::NodeHandle &);

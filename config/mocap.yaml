@@ -10,24 +10,24 @@
 #        parent_frame_id: optitrack_natnet
 #        use_new_coordinates: false
 markers:
-    '1':
+    'M1':
         topic_name: M1/point
         frame_id: map
-        init_pos:  [0.0, 0.0, 0.0] # Note this is in optitrack frame, look up the coordinate in Motive Software.
-    '2':
+        init_pos:  [-0.04, 0.0, 0.07] # Note this is in optitrack frame, look up the coordinate in Motive Software.
+    'M2':
         topic_name: M2/point
         frame_id: map
-        init_pos: [0.0, 0.0, 0.166]
-    '3':
+        init_pos: [-0.04, 0.0, 0.22]
+    'M3':
         topic_name: M3/point
         frame_id: map
-        init_pos: [0.04, 0.0, -0.05]
-    '4':
+        init_pos: [0.0, 0.0, 0.0]
+    'M4':
         topic_name: M4/point
         frame_id: map
-        init_pos: [0.04, 0.0, 0.08]
+        init_pos: [0.0, 0.0, 0.146]
 marker_distance: # TODO better tracking using known relationship between points
-    '1-2': 0.18
-    '3-4': 0.16
+    '1-2': 0.15
+    '3-4': 0.146
 optitrack_config:
         multicast_address: 224.0.0.1

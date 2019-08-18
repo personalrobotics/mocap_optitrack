@@ -91,7 +91,7 @@ double distance_fn(Marker& a, Marker& b)
   return dis;
 }
 
-void trackMarkers(int num_mocap_markers, Marker* mocap_markers, MarkerMap& published_markers)
+void trackMarkers(int num_mocap_markers, Marker* mocap_markers, MarkerArray& published_markers)
 {
   int n = published_markers.size(), m = num_mocap_markers;
 
@@ -103,8 +103,9 @@ void trackMarkers(int num_mocap_markers, Marker* mocap_markers, MarkerMap& publi
 
   std::vector<bool> unused(m, true);
   int minID, i = 0;
-  for(std::map<int, PublishedMarker>::iterator it = published_markers.begin(); it != published_markers.end(); ++it) {
-    Marker & currentMarker = it->second.currentMarker;
+  for(int i = 0; i < n; ++i) {
+    PublishedMarker& marker = published_markers[i];
+    Marker& currentMarker = marker.currentMarker;
     minID = -1;
     for(int j = 0; j < m; ++j)
       if(unused[j]){
@@ -113,21 +114,26 @@ void trackMarkers(int num_mocap_markers, Marker* mocap_markers, MarkerMap& publi
           minID = j;
       }
     if(minID != -1 && (distance[i][minID] < 0.005 ||
-                       distance[i][minID] < 0.005 + it->second.disconnectedFrames * 0.001))
+                       distance[i][minID] < 0.005 + marker.disconnectedFrames * 0.001))
     {
-      //ROS_INFO("i %d, distance[i][minID] %f", i, distance[i][minID]);
+      //ROS_INFO("i %d, distance[i][minID] %.2f", i, distance[i][minID]);
       //ROS_INFO("i: %f, %f, %f", currentMarker.x, currentMarker.y, currentMarker.z);
-      it->second.update(mocap_markers[minID]);
-      it->second.disconnectedFrames = 0;
+      marker.update(mocap_markers[minID]);
+      if(marker.disconnectedFrames > 0)
+      {
+        marker.disconnectedFrames = 0;
+        ROS_INFO("Recover lost marker %d, distance from last known location %.4f", i, distance[i][minID]);
+      }
       //ROS_INFO("min: %f, %f, %f", currentMarker.x, currentMarker.y, currentMarker.z);
       unused[minID] = false;
     }
     else
     {
-      it->second.disconnectedFrames += 1;
-      ROS_INFO("Lost marker %d which was at %f, %f, %f", it->first, it->second.currentMarker.x, it->second.currentMarker.y, it->second.currentMarker.z);
+      marker.disconnectedFrames += 1;
+      ROS_INFO("Lost marker %d for %d frames, which was at %.4f, %.4f, %.4f",
+                i, marker.disconnectedFrames,
+                currentMarker.x, currentMarker.y, currentMarker.z);
     }
-    ++i;
   }
 
 
@@ -145,7 +151,7 @@ void processMocapData( const char** mocap_model,
                        PublishedPointArray& published_pArray,
                        const std::string& multicast_ip)
 {
-  MarkerMap& published_markers = published_pArray.published_markers;
+  MarkerArray& published_markers = published_pArray.published_markers;
 
   UdpMulticastSocket multicast_client_socket( LOCAL_PORT, multicast_ip );
 
@@ -218,8 +224,8 @@ void processMocapData( const char** mocap_model,
           {
             trackMarkers(format.model.numOtherMarkers, format.model.otherMarkers, published_markers);
 
-            for (std::map<int, PublishedMarker>::iterator it=published_markers.begin(); it!=published_markers.end(); ++it)
-              it->second.publish();
+            for (int i = 0; i < published_markers.size(); ++i)
+              published_markers[i].publish();
 
             published_pArray.publish();
 
@@ -311,8 +317,7 @@ int main( int argc, char* argv[] )
       }
   }
 
-  // Add each marker in config to the MarkerMap
-  //MarkerMap published_markers;
+  // Add each marker in config to the pArray
   PublishedPointArray published_pArray(n);
   if (n.hasParam(MARKER_KEY))
   {
@@ -322,24 +327,15 @@ int main( int argc, char* argv[] )
       {
           XmlRpc::XmlRpcValue::iterator i;
           for (i = marker_list.begin(); i != marker_list.end(); ++i) {
-            // TODO:: Parse each config, create MarkerMap type and PublishedMarker Type. Write its publish function.
               if (i->second.getType() == XmlRpc::XmlRpcValue::TypeStruct) {
-                  PublishedMarker marker(i->second); //TODO
-                  //PublishedRigidBody body(i->second);
-                  string id = (string&) (i->first);
-                  //RigidBodyItem item(atoi(id.c_str()), body);
-                  MarkerItem item(atoi(id.c_str()), marker);
-
-                  //std::pair<RigidBodyMap::iterator, bool> result = published_rigid_bodies.insert(item);
-                  std::pair<MarkerMap::iterator, bool> result =
-                      published_pArray.published_markers.insert(item);
-                  if (!result.second)
-                  {
-                      ROS_ERROR("Could not insert configuration for marker ID %s", id.c_str());
-                  }
+                  PublishedMarker marker(i->second);
+                  published_pArray.published_markers.push_back(marker);
+                  ROS_INFO("Tracking marker ID %s", i->first.c_str());
               }
           }
       }
+      ROS_INFO("Tracking %d unlabeled markers in total", int(published_pArray.published_markers.size()));
+
   }
 
   // Process mocap data until SIGINT
