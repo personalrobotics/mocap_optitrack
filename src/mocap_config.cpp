@@ -120,6 +120,10 @@ void PublishedRigidBody::updateMarker(Marker* observe_markers, int observe_num_m
       first_published_marker[i].update(observe_markers[i]);
     }
   }
+  else
+  {
+    ROS_INFO("Rigidbody marker info mismatch: observed incorrect number of markers");
+  }
 }
 void PublishedRigidBody::publish(RigidBody &body)
 {
@@ -144,7 +148,7 @@ void PublishedRigidBody::publish(RigidBody &body)
     pose_pub.publish(pose);
   }
 
-  if (!publish_pose2d && !publish_tf)
+  if (!publish_pose2d && !publish_tf && !publish_markers)
   {
     // nothing to do, bail early
     return;
