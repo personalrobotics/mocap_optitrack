@@ -51,32 +51,6 @@
 #include <tf/transform_broadcaster.h>
 #include "mocap_datapackets.h"
 
-class PublishedRigidBody
-{
-  private:
-  ros::NodeHandle n;
-
-  std::string pose_topic;
-  std::string pose2d_topic;
-  std::string parent_frame_id;
-  std::string child_frame_id;
-
-
-  bool publish_pose;
-  bool publish_tf;
-  bool publish_pose2d;
-  bool use_new_coordinates;
-
-  tf::TransformBroadcaster tf_pub;
-  ros::Publisher pose_pub;
-  ros::Publisher pose2d_pub;
-
-  bool validateParam(XmlRpc::XmlRpcValue &, const std::string &);
-
-  public:
-  PublishedRigidBody(XmlRpc::XmlRpcValue &);
-  void publish(RigidBody &);
-};
 
 class PublishedMarker
 {
@@ -97,8 +71,6 @@ public:
 };
 
 
-typedef std::map<int, PublishedRigidBody> RigidBodyMap;
-typedef std::pair<int, PublishedRigidBody> RigidBodyItem;
 typedef std::map<int, PublishedMarker> MarkerMap;
 typedef std::pair<int, PublishedMarker> MarkerItem;
 typedef std::vector<PublishedMarker> MarkerArray;
@@ -111,10 +83,45 @@ private:
   std::string frame_id;
   ros::Publisher pub;
 public:
-  MarkerArray published_markers;
+  MarkerArray published_unlabeled_markers;
+  MarkerArray published_model_markers; // No need to track manually
   int numPoints;
   void publish();
   PublishedPointArray(ros::NodeHandle &);
 };
+
+class PublishedRigidBody
+{
+  private:
+  ros::NodeHandle n;
+
+  std::string pose_topic;
+  std::string pose2d_topic;
+  std::string parent_frame_id;
+  std::string child_frame_id;
+
+  bool publish_pose;
+  bool publish_tf;
+  bool publish_pose2d;
+  bool use_new_coordinates;
+  bool publish_markers;
+
+  tf::TransformBroadcaster tf_pub;
+  ros::Publisher pose_pub;
+  ros::Publisher pose2d_pub;
+
+  PublishedMarker* first_published_marker;
+  int num_published_markers;
+
+  bool validateParam(XmlRpc::XmlRpcValue &, const std::string &);
+
+  public:
+  PublishedRigidBody(XmlRpc::XmlRpcValue &, MarkerArray &);
+  void updateMarker(Marker*, int);
+  void publish(RigidBody &);
+};
+
+typedef std::map<int, PublishedRigidBody> RigidBodyMap;
+typedef std::pair<int, PublishedRigidBody> RigidBodyItem;
 
 #endif  // __MOCAP_CONFIG_H__

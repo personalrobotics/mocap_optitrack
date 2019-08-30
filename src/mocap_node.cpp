@@ -79,7 +79,7 @@ typedef struct
 
 ////////////////////////////////////////////////////////////////////////
 
-double distance_fn(Marker& a, Marker& b)
+double square_distance_fn(Marker& a, Marker& b)
 {
   double disX = a.x - b.x, disY = a.y - b.y, disZ = a.z - b.z, dis = 0.0;
   if( abs(disX) > 0.0001)
@@ -91,38 +91,39 @@ double distance_fn(Marker& a, Marker& b)
   return dis;
 }
 
-void trackMarkers(int num_mocap_markers, Marker* mocap_markers, MarkerArray& published_markers)
+void trackMarkers(int num_mocap_markers, Marker* mocap_markers, MarkerArray& published_unlabeled_markers)
 {
-  int n = published_markers.size(), m = num_mocap_markers;
+  int n = published_unlabeled_markers.size(), m = num_mocap_markers;
 
-  double** distance = new double*[n];
+  double** square_distance = new double*[n];
   for(int i = 0; i < n; ++i)
   {
-    distance[i] = new double[m];
+    square_distance[i] = new double[m];
   }
 
   std::vector<bool> unused(m, true);
   int minID, i = 0;
   for(int i = 0; i < n; ++i) {
-    PublishedMarker& marker = published_markers[i];
+    PublishedMarker& marker = published_unlabeled_markers[i];
     Marker& currentMarker = marker.currentMarker;
     minID = -1;
     for(int j = 0; j < m; ++j)
       if(unused[j]){
-        distance[i][j] = distance_fn(currentMarker, mocap_markers[j]);
-        if(minID == -1 || distance[i][j] < distance[i][minID])
+        square_distance[i][j] = square_distance_fn(currentMarker, mocap_markers[j]);
+        if(minID == -1 || square_distance[i][j] < square_distance[i][minID])
           minID = j;
       }
-    if(minID != -1 && (distance[i][minID] < 0.005 ||
-                       distance[i][minID] < 0.005 + marker.disconnectedFrames * 0.001))
+    if(minID != -1 && (square_distance[i][minID] < 0.007 ||
+                       square_distance[i][minID] < 0.007 + marker.disconnectedFrames * 0.00001))
     {
-      //ROS_INFO("i %d, distance[i][minID] %.2f", i, distance[i][minID]);
+      //ROS_INFO("i %d, square_distance[i][minID] %.2f", i, square_distance[i][minID]);
       //ROS_INFO("i: %f, %f, %f", currentMarker.x, currentMarker.y, currentMarker.z);
       marker.update(mocap_markers[minID]);
       if(marker.disconnectedFrames > 0)
       {
         marker.disconnectedFrames = 0;
-        ROS_INFO("Recover lost marker %d, distance from last known location %.4f", i, distance[i][minID]);
+        ROS_INFO("Recover lost marker %d, distance from last known location %.4f",
+                 i, sqrt(square_distance[i][minID]));
       }
       //ROS_INFO("min: %f, %f, %f", currentMarker.x, currentMarker.y, currentMarker.z);
       unused[minID] = false;
@@ -130,9 +131,9 @@ void trackMarkers(int num_mocap_markers, Marker* mocap_markers, MarkerArray& pub
     else
     {
       marker.disconnectedFrames += 1;
-      ROS_INFO("Lost marker %d for %d frames, which was at %.4f, %.4f, %.4f",
-                i, marker.disconnectedFrames,
-                currentMarker.x, currentMarker.y, currentMarker.z);
+      ROS_INFO("Lost unlabeled marker %d for %d frames", //, which was at %.4f, %.4f, %.4f",
+                i, marker.disconnectedFrames);
+                //currentMarker.x, currentMarker.y, currentMarker.z);
     }
   }
 
@@ -151,7 +152,7 @@ void processMocapData( const char** mocap_model,
                        PublishedPointArray& published_pArray,
                        const std::string& multicast_ip)
 {
-  MarkerArray& published_markers = published_pArray.published_markers;
+  MarkerArray& published_unlabeled_markers = published_pArray.published_unlabeled_markers;
 
   UdpMulticastSocket multicast_client_socket( LOCAL_PORT, multicast_ip );
 
@@ -213,23 +214,23 @@ void processMocapData( const char** mocap_model,
 
               if (item != published_rigid_bodies.end())
               {
-                  item->second.publish(format.model.rigidBodies[i]);
+                item->second.updateMarker(format.model.rigidBodies[i].marker, format.model.rigidBodies[i].NumberOfMarkers);
+                item->second.publish(format.model.rigidBodies[i]);
               }
             }
           }
 
           // Process other marker information
           if( format.model.numOtherMarkers > 0 &&
-              published_markers.size() > 0)
+              published_unlabeled_markers.size() > 0)
           {
-            trackMarkers(format.model.numOtherMarkers, format.model.otherMarkers, published_markers);
+            trackMarkers(format.model.numOtherMarkers, format.model.otherMarkers, published_unlabeled_markers);
 
-            for (int i = 0; i < published_markers.size(); ++i)
-              published_markers[i].publish();
-
-            published_pArray.publish();
-
+            for (int i = 0; i < published_unlabeled_markers.size(); ++i)
+              published_unlabeled_markers[i].publish();
           }
+
+          published_pArray.publish();
         }
 
         if (header == NAT_PINGRESPONSE) {
@@ -292,6 +293,9 @@ int main( int argc, char* argv[] )
     ROS_WARN_STREAM("Could not get multicast address, using default: " << multicast_ip);
   }
 
+  // pArray stores all marker information (markers that belong to rigid body and unlabeled markers)
+  PublishedPointArray published_pArray(n);
+
   // Add each rigid body in config to the RigidBodyMap
   RigidBodyMap published_rigid_bodies;
   if (n.hasParam(RIGID_BODIES_KEY))
@@ -303,7 +307,7 @@ int main( int argc, char* argv[] )
           XmlRpc::XmlRpcValue::iterator i;
           for (i = body_list.begin(); i != body_list.end(); ++i) {
               if (i->second.getType() == XmlRpc::XmlRpcValue::TypeStruct) {
-                  PublishedRigidBody body(i->second);
+                  PublishedRigidBody body(i->second, published_pArray.published_model_markers);
                   string id = (string&) (i->first);
                   RigidBodyItem item(atoi(id.c_str()), body);
 
@@ -318,7 +322,6 @@ int main( int argc, char* argv[] )
   }
 
   // Add each marker in config to the pArray
-  PublishedPointArray published_pArray(n);
   if (n.hasParam(MARKER_KEY))
   {
       XmlRpc::XmlRpcValue marker_list;
@@ -329,12 +332,12 @@ int main( int argc, char* argv[] )
           for (i = marker_list.begin(); i != marker_list.end(); ++i) {
               if (i->second.getType() == XmlRpc::XmlRpcValue::TypeStruct) {
                   PublishedMarker marker(i->second);
-                  published_pArray.published_markers.push_back(marker);
+                  published_pArray.published_unlabeled_markers.push_back(marker);
                   ROS_INFO("Tracking marker ID %s", i->first.c_str());
               }
           }
       }
-      ROS_INFO("Tracking %d unlabeled markers in total", int(published_pArray.published_markers.size()));
+      ROS_INFO("Tracking %d unlabeled markers in total", int(published_pArray.published_unlabeled_markers.size()));
 
   }
 

@@ -246,13 +246,27 @@ void MoCapDataFormat::parse()
     {
       model.rigidBodies[m].marker = new Marker [model.rigidBodies[m].NumberOfMarkers];
 
-      size_t byte_count = model.rigidBodies[m].NumberOfMarkers * sizeof(Marker);
-      memcpy(model.rigidBodies[m].marker, packet, byte_count);
-      seek(byte_count);
+      for (int _tmp = 0; _tmp < model.rigidBodies[m].NumberOfMarkers; ++_tmp)
+      {
+        read_and_seek(model.rigidBodies[m].marker[_tmp]);
+        // ROS_DEBUG("marker %d: [%.2f, %.2f, %.2f]\n",
+        //   _tmp, model.rigidBodies[m].marker[_tmp].x, model.rigidBodies[m].marker[_tmp].y, model.rigidBodies[m].marker[_tmp].z);
+      }
+
+      // skip marker
+      // size_t byte_count = model.rigidBodies[m].NumberOfMarkers * sizeof(Marker);
+      //memcpy(model.rigidBodies[m].marker, packet, byte_count);
+      //seek(byte_count);
 
       // skip marker IDs
-      byte_count = model.rigidBodies[m].NumberOfMarkers * sizeof(int);
+      size_t byte_count = model.rigidBodies[m].NumberOfMarkers * sizeof(int);
       seek(byte_count);
+      //for (int _tmp = 0; _tmp < model.rigidBodies[m].NumberOfMarkers; ++_tmp)
+      //{
+      //  int _tmp_id;
+      //  read_and_seek(_tmp_id);
+      //  ROS_INFO("marker %d id %d", _tmp, _tmp_id);
+      //}
 
       // skip marker sizes
       byte_count = model.rigidBodies[m].NumberOfMarkers * sizeof(float);

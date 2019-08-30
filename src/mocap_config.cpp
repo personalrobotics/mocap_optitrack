@@ -62,7 +62,7 @@ const std::string MARKER_TOPIC_PARAM_NAME = "topic_name";
 const std::string MARKER_INIT_POS_PARAM_NAME = "init_pos";
 const std::string MARKER_FRAME_PARAM_NAME = "frame_id";
 
-PublishedRigidBody::PublishedRigidBody(XmlRpc::XmlRpcValue &config_node)
+PublishedRigidBody::PublishedRigidBody(XmlRpc::XmlRpcValue &config_node, MarkerArray & marker_array)
 {
   // load configuration for this rigid body from ROS
   publish_pose = validateParam(config_node, POSE_TOPIC_PARAM_NAME);
@@ -71,6 +71,7 @@ PublishedRigidBody::PublishedRigidBody(XmlRpc::XmlRpcValue &config_node)
   publish_tf = (validateParam(config_node, CHILD_FRAME_ID_PARAM_NAME) &&
                 validateParam(config_node, PARENT_FRAME_ID_PARAM_NAME));
   use_new_coordinates = validateParam(config_node, NEW_COORDINATE_FRAME_PARAM_NAME);
+  publish_markers = validateParam(config_node, "publish_markers");
 
   if (publish_pose)
   {
@@ -89,8 +90,37 @@ PublishedRigidBody::PublishedRigidBody(XmlRpc::XmlRpcValue &config_node)
     child_frame_id = (std::string&) config_node[CHILD_FRAME_ID_PARAM_NAME];
     parent_frame_id = (std::string&) config_node[PARENT_FRAME_ID_PARAM_NAME];
   }
+
+  if (publish_markers)
+  {
+    XmlRpc::XmlRpcValue marker_list = config_node["markers"];
+    if (marker_list.getType() == XmlRpc::XmlRpcValue::TypeStruct && marker_list.size() > 0)
+    {
+      XmlRpc::XmlRpcValue::iterator i;
+      int prev_len = marker_array.size();
+      for (i = marker_list.begin(); i != marker_list.end(); ++i) {
+          if (i->second.getType() == XmlRpc::XmlRpcValue::TypeStruct) {
+              PublishedMarker marker(i->second);
+              marker_array.push_back(marker);
+              ROS_INFO("Tracking marker ID %s", i->first.c_str());
+          }
+      }
+      first_published_marker = &marker_array[prev_len];
+      num_published_markers = marker_array.size() - prev_len;
+    }
+  }
 }
 
+void PublishedRigidBody::updateMarker(Marker* observe_markers, int observe_num_markers)
+{
+  if (observe_num_markers == num_published_markers)
+  {
+    for (int i = 0; i < observe_num_markers; ++i)
+    {
+      first_published_marker[i].update(observe_markers[i]);
+    }
+  }
+}
 void PublishedRigidBody::publish(RigidBody &body)
 {
   // don't do anything if no new data was provided
@@ -98,6 +128,7 @@ void PublishedRigidBody::publish(RigidBody &body)
   {
     return;
   }
+
   // NaN?
   if (body.pose.position.x != body.pose.position.x)
   {
@@ -146,6 +177,12 @@ void PublishedRigidBody::publish(RigidBody &body)
     transform.setRotation(q);
     ros::Time timestamp(ros::Time::now());
     tf_pub.sendTransform(tf::StampedTransform(transform, timestamp, parent_frame_id, child_frame_id));
+  }
+
+  if (publish_markers)
+  {
+    for (int i = 0; i < num_published_markers; ++i)
+      first_published_marker[i].publish();
   }
 }
 
@@ -216,7 +253,9 @@ void PublishedPointArray::publish()
 {
   mocap_optitrack::PointArray pArray;
   pArray.header.stamp = ros::Time::now(); // TODO cache pArray and only update
-  for (int i = 0; i < published_markers.size(); ++i)
-    pArray.points.push_back(published_markers[i].currentMarker.get_3d_point());
+  for (int i = 0; i < published_model_markers.size(); ++i)
+    pArray.points.push_back(published_model_markers[i].currentMarker.get_3d_point());
+  for (int i = 0; i < published_unlabeled_markers.size(); ++i)
+    pArray.points.push_back(published_unlabeled_markers[i].currentMarker.get_3d_point());
   pub.publish(pArray);
 }
