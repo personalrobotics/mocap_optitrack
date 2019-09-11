@@ -20,6 +20,7 @@
 
 // System includes
 #include <string>
+#include <tuple>
 #include <unistd.h>
 #include <math.h>
 ////////////////////////////////////////////////////////////////////////
@@ -94,45 +95,47 @@ double square_distance_fn(Marker& a, Marker& b)
 void trackMarkers(int num_mocap_markers, Marker* mocap_markers, MarkerArray& published_unlabeled_markers)
 {
   int n = published_unlabeled_markers.size(), m = num_mocap_markers;
+  std::vector<std::tuple<double, int, int>> square_distance;
 
-  double** square_distance = new double*[n];
   for(int i = 0; i < n; ++i)
-  {
-    square_distance[i] = new double[m];
-  }
-
-  std::vector<bool> unused(m, true);
-  int minID, i = 0;
-  for(int i = 0; i < n; ++i) {
-    PublishedMarker& marker = published_unlabeled_markers[i];
-    Marker& currentMarker = marker.currentMarker;
-    minID = -1;
     for(int j = 0; j < m; ++j)
-      if(unused[j]){
-        square_distance[i][j] = square_distance_fn(currentMarker, mocap_markers[j]);
-        if(minID == -1 || square_distance[i][j] < square_distance[i][minID])
-          minID = j;
-      }
-    if(minID != -1 && (square_distance[i][minID] < 0.007 ||
-                       square_distance[i][minID] < 0.007 + marker.disconnectedFrames * 0.00001))
+      square_distance.push_back(std::make_tuple(
+        square_distance_fn(published_unlabeled_markers[i].currentMarker, mocap_markers[j]),
+        i, j));
+
+  sort(square_distance.begin(), square_distance.end());
+
+  std:;vector<bool> unassigned(n, true);
+  std::vector<bool> unused(m, true);
+
+  for(int _id = 0; _id < square_distance.size(); ++_id)
+    if(unassigned[std::get<1>(square_distance[_id])] &&
+       unused[std::get<2>(square_distance[_id])])
     {
-      //ROS_INFO("i %d, square_distance[i][minID] %.2f", i, square_distance[i][minID]);
-      //ROS_INFO("i: %f, %f, %f", currentMarker.x, currentMarker.y, currentMarker.z);
-      marker.update(mocap_markers[minID]);
-      if(marker.disconnectedFrames > 0)
+      double & square_dis = std::get<0>(square_distance[_id]);
+      int i = std::get<1>(square_distance[_id]),
+          j = std::get<2>(square_distance[_id]);
+      PublishedMarker& marker = published_unlabeled_markers[i];
+      if(square_dis < 0.003 || square_dis < 0.003 + marker.disconnectedFrames * 0.00002)
       {
-        marker.disconnectedFrames = 0;
-        ROS_INFO("Recover lost marker %d, distance from last known location %.4f",
-                 i, sqrt(square_distance[i][minID]));
+        marker.update(mocap_markers[j]);
+        if(marker.disconnectedFrames > 0)
+        {
+          marker.disconnectedFrames = 0;
+          ROS_INFO("Recover lost marker %d, distance from last known location %.4f",
+                   i, sqrt(square_dis));
+        }
+        unassigned[i] = false;
+        unused[j] = false;
       }
-      //ROS_INFO("min: %f, %f, %f", currentMarker.x, currentMarker.y, currentMarker.z);
-      unused[minID] = false;
     }
-    else
+
+  for(int i = 0; i < n; ++i) {
+    if(unassigned[i])
     {
-      marker.disconnectedFrames += 1;
+      published_unlabeled_markers[i].disconnectedFrames += 1;
       ROS_INFO("Lost unlabeled marker %d for %d frames", //, which was at %.4f, %.4f, %.4f",
-                i, marker.disconnectedFrames);
+                i, published_unlabeled_markers[i].disconnectedFrames);
                 //currentMarker.x, currentMarker.y, currentMarker.z);
     }
   }
