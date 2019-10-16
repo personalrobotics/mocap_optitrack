@@ -116,7 +116,7 @@ void trackMarkers(int num_mocap_markers, Marker* mocap_markers, MarkerArray& pub
       int i = std::get<1>(square_distance[_id]),
           j = std::get<2>(square_distance[_id]);
       PublishedMarker& marker = published_unlabeled_markers[i];
-      if(square_dis < 0.003 || square_dis < 0.003 + marker.disconnectedFrames * 0.00002)
+      if(square_dis < 0.002 || square_dis < 0.002 + marker.disconnectedFrames * 0.00002)
       {
         marker.update(mocap_markers[j]);
         if(marker.disconnectedFrames > 0)
