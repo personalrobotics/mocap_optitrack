@@ -24,13 +24,13 @@ rigid_bodies:
                 frame_id: map
                 init_pos: [-0.05, 0.0, 0.0] # dummy
 markers:
-    'M4':
+    'M4': # this has been modified, the original value is [0.0, 0.0, 0.0]
         topic_name: M4/point
         frame_id: map
-        init_pos:  [0.0, 0.0, 0.0] # Note this is in optitrack frame, look up the coordinate in Motive Software.
-    'M5':
+        init_pos:  [0.0, 0.005, 0.06] # Note this is in optitrack frame, look up the coordinate in Motive Software.
+    'M5': # this has been modified, the original value is [0.0, 0.005, 0.06]
         topic_name: M5/point
         frame_id: map
-        init_pos:  [0.0, 0.005, 0.06]
+        init_pos:  [0.0, 0.0046, 0.268]
 optitrack_config:
         multicast_address: 224.0.0.1
