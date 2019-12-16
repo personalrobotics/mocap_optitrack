@@ -85,7 +85,6 @@ private:
 public:
   MarkerArray published_unlabeled_markers;
   MarkerArray published_model_markers; // No need to track manually
-  int numPoints;
   void publish();
   PublishedPointArray(ros::NodeHandle &);
 };

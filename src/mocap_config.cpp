@@ -247,9 +247,8 @@ void PublishedMarker::update(Marker & m)
 PublishedPointArray::PublishedPointArray(ros::NodeHandle & nh)
 {
   topic = "Choppose";
-  numPoints = 4;
   frame_id = "optitrack_natnet";
-  pub = n.advertise<mocap_optitrack::PointArray>(topic, 10);
+  pub = n.advertise<mocap_optitrack::PointArray>(topic, 1);
   //TODO actually read config file
 }
 
