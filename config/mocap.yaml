@@ -13,29 +13,45 @@ rigid_bodies:
         markers:
             '1': # the order of point is determined by Optitrack software
                 topic_name: M1/point # M1 should be the one near tip
-                frame_id: map
-                init_pos: [-0.05, 0.0, 0.0] # dummy
+                frame_id: base
+                init_pos: [0.0390, 0.00425, 0.3802] # dummy
             '2': # The middle
                 topic_name: M2/point
-                frame_id: map
-                init_pos: [-0.05, 0.0, 0.0] # dummy
-            '3': # The tail
+                frame_id: base
+                init_pos: [0.0227, 0.004656, 0.3408] # dummy
+            '3': # The tails
                 topic_name: M3/point
-                frame_id: map
-                init_pos: [-0.05, 0.0, 0.0] # dummy
+                frame_id: base
+                init_pos: [0.0392, 0.0046, 0.2158] # dummy
+    '2':
+        use_new_coordinates: false
+        publish_markers: true
+        markers:
+            '7': # the order of point is determined by Optitrack software
+                topic_name: M7/point # M1 should be the one near tip
+                frame_id: base
+                init_pos: [0.0390, 0.00425, 0.3802] # dummy
+            '8': # The middle
+                topic_name: M8/point
+                frame_id: base
+                init_pos: [0.0227, 0.004656, 0.3408] # dummy
+            '9': # The tails
+                topic_name: M9/point
+                frame_id: base
+                init_pos: [0.0392, 0.0046, 0.2158] # dummy
 markers:
     'M4': # this has been modified, the original value is [0.0, 0.0, 0.0]
         topic_name: M4/point
-        frame_id: map
-        init_pos:  [0.02, 0.009, 0.64] # Note this is in optitrack frame, look up the coordinate in Motive Software.
+        frame_id: base
+        init_pos:  [0.737241, 0.0125533, 0.263925] # Note this is in optitrack frame, look up the coordinate in Motive Software.
     'M5': # this has been modified, the original value is [0.0, 0.005, 0.06]
         topic_name: M5/point
-        frame_id: map
-        init_pos:  [0.01, 0.009, 0.845]
-#    'M6': # this is the marker to pick up
-#        topic_name: M6/point
-#        frame_id: map
-#        init_pos:  [0.0, 0.0046, 0.268] # Todo: wait to be defined
+        frame_id: base
+        init_pos:  [0.555452, 0.013130, 0.17844]
+    'M6': # this is the marker to pick up
+        topic_name: M6/point
+        frame_id: base
+        init_pos:  [0.470380, 0.028425, 0.396325] # Todo: wait to be defined
 
 optitrack_config:
         multicast_address: 224.0.0.1
