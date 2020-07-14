@@ -43,15 +43,15 @@ markers:
     'M4': # this has been modified, the original value is [0.0, 0.0, 0.0]
         topic_name: M4/point
         frame_id: base
-        init_pos:  [0.737241, 0.0125533, 0.263925] # Note this is in optitrack frame, look up the coordinate in Motive Software.
+        init_pos:  [0.171003, -0.003576, 0.782681] # Note this is in optitrack frame, look up the coordinate in Motive Software.
     'M5': # this has been modified, the original value is [0.0, 0.005, 0.06]
         topic_name: M5/point
         frame_id: base
-        init_pos:  [0.555452, 0.013130, 0.17844]
+        init_pos:  [0.250157, -0.002691, 0.598008]
     'M6': # this is the marker to pick up
         topic_name: M6/point
         frame_id: base
-        init_pos:  [0.470380, 0.028425, 0.396325] # Todo: wait to be defined
+        init_pos:  [-0.009359, 0.046488, 0.683056]
 
 optitrack_config:
         multicast_address: 224.0.0.1

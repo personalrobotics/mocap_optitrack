@@ -19,8 +19,8 @@ const geometry_msgs::Point Marker::get_3d_point()
 {
   // Note this transforms the point from Optitrack frame to map frame
   geometry_msgs::Point point;
-  point.x = -x;
-  point.y = z;
+  point.x = -z;
+  point.y = -x;
   point.z = y;
 
   // double _x=z;
