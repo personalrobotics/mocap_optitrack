@@ -109,15 +109,15 @@ class PublishedRigidBody
   ros::Publisher pose_pub;
   ros::Publisher pose2d_pub;
 
-  PublishedMarker* first_published_marker;
-  int num_published_markers;
+  int first_published_marker;
+  int end_published_marker;
 
   bool validateParam(XmlRpc::XmlRpcValue &, const std::string &);
 
   public:
   PublishedRigidBody(XmlRpc::XmlRpcValue &, MarkerArray &);
-  void updateMarker(Marker*, int);
-  void publish(RigidBody &);
+  void updateMarker(Marker*, int, MarkerArray &);
+  void publish(RigidBody &, MarkerArray &);
 };
 
 typedef std::map<int, PublishedRigidBody> RigidBodyMap;

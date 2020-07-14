@@ -11,15 +11,15 @@ rigid_bodies:
         use_new_coordinates: false
         publish_markers: true
         markers:
-            '1': # the order of point is determined by Optitrack software
+            'M1': # the order of point is determined by Optitrack software
                 topic_name: M1/point # M1 should be the one near tip
                 frame_id: base
                 init_pos: [0.0390, 0.00425, 0.3802] # dummy
-            '2': # The middle
+            'M2': # The middle
                 topic_name: M2/point
                 frame_id: base
                 init_pos: [0.0227, 0.004656, 0.3408] # dummy
-            '3': # The tails
+            'M3': # The tails
                 topic_name: M3/point
                 frame_id: base
                 init_pos: [0.0392, 0.0046, 0.2158] # dummy
@@ -27,15 +27,15 @@ rigid_bodies:
         use_new_coordinates: false
         publish_markers: true
         markers:
-            '7': # the order of point is determined by Optitrack software
-                topic_name: M7/point # M1 should be the one near tip
+            'M7': # the order of point is determined by Optitrack software
+                topic_name: M7/point # should be the alone point on rigid body tracker
                 frame_id: base
                 init_pos: [0.0390, 0.00425, 0.3802] # dummy
-            '8': # The middle
+            'M8': # The middle
                 topic_name: M8/point
                 frame_id: base
                 init_pos: [0.0227, 0.004656, 0.3408] # dummy
-            '9': # The tails
+            'M9': # The tails
                 topic_name: M9/point
                 frame_id: base
                 init_pos: [0.0392, 0.0046, 0.2158] # dummy

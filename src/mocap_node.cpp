@@ -210,6 +210,7 @@ void processMocapData( const char** mocap_model,
           // Update rigid body information
           if( format.model.numRigidBodies > 0 && published_rigid_bodies.size() > 0)
           {
+            ROS_DEBUG("Received data about %d rigid bodies", format.model.numRigidBodies);
             for( int i = 0; i < format.model.numRigidBodies; i++ )
             {
               int ID = format.model.rigidBodies[i].ID;
@@ -217,8 +218,14 @@ void processMocapData( const char** mocap_model,
 
               if (item != published_rigid_bodies.end())
               {
-                item->second.updateMarker(format.model.rigidBodies[i].marker, format.model.rigidBodies[i].NumberOfMarkers);
-                item->second.publish(format.model.rigidBodies[i]);
+                item->second.updateMarker(
+                  format.model.rigidBodies[i].marker,
+                  format.model.rigidBodies[i].NumberOfMarkers,
+                  published_pArray.published_model_markers
+                  );
+                item->second.publish(
+                  format.model.rigidBodies[i],
+                  published_pArray.published_model_markers);
               }
             }
           }

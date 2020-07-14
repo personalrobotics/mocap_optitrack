@@ -105,19 +105,21 @@ PublishedRigidBody::PublishedRigidBody(XmlRpc::XmlRpcValue &config_node, MarkerA
               ROS_INFO("Tracking marker ID %s", i->first.c_str());
           }
       }
-      first_published_marker = &marker_array[prev_len];
-      num_published_markers = marker_array.size() - prev_len;
+      first_published_marker = prev_len;
+      end_published_marker = marker_array.size();
     }
   }
 }
 
-void PublishedRigidBody::updateMarker(Marker* observe_markers, int observe_num_markers)
+void PublishedRigidBody::updateMarker(Marker* observe_markers,
+  int observe_num_markers,
+  MarkerArray & marker_array)
 {
-  if (observe_num_markers == num_published_markers)
+  if (observe_num_markers + first_published_marker == end_published_marker)
   {
     for (int i = 0; i < observe_num_markers; ++i)
     {
-      first_published_marker[i].update(observe_markers[i]);
+      marker_array[i + first_published_marker].update(observe_markers[i]);
     }
   }
   else
@@ -125,11 +127,12 @@ void PublishedRigidBody::updateMarker(Marker* observe_markers, int observe_num_m
     ROS_INFO("Rigidbody marker info mismatch: observed incorrect number of markers");
   }
 }
-void PublishedRigidBody::publish(RigidBody &body)
+void PublishedRigidBody::publish(RigidBody &body, MarkerArray & marker_array)
 {
   // don't do anything if no new data was provided
   if (!body.has_data())
   {
+    ROS_INFO("Didnt receive new data for rigid body ID=%d.", body.ID);
     return;
   }
 
@@ -185,8 +188,8 @@ void PublishedRigidBody::publish(RigidBody &body)
 
   if (publish_markers)
   {
-    for (int i = 0; i < num_published_markers; ++i)
-      first_published_marker[i].publish();
+    for (int i = first_published_marker; i < end_published_marker; ++i)
+      marker_array[i].publish();
   }
 }
 
