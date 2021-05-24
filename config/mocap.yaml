@@ -10,9 +10,9 @@ rigid_bodies:
         #parent_frame_id: map
         use_new_coordinates: false
         publish_markers: true
-        markers:
-            'T0': # the order of point is determined by Optitrack software
-                topic_name: T0/point # M1 should be the one near tip
+        markers: # Note the order of points to select, when adding rigid body in Optitrack Software
+            'T0':
+                topic_name: T0/point # should be the one near tip
                 frame_id: base
                 init_pos: [.0, .0, .0] # dummy
             'T1': # The middle
@@ -28,28 +28,28 @@ rigid_bodies:
         publish_markers: true
         markers:
             'R0': # the order of point is determined by Optitrack software
-                topic_name: T6/point # should be the alone point on rigid body tracker
+                topic_name: R0/point # the point cloest to chopsticks tip
                 frame_id: base
-                init_pos: [0.0390, 0.00425, 0.3802] # dummy
+                init_pos: [.0, .0, .0] # dummy
             'R1': # The middle
-                topic_name: T7/point
+                topic_name: R1/point
                 frame_id: base
-                init_pos: [0.0227, 0.004656, 0.3408] # dummy
+                init_pos: [.0, .0, .0] # dummy
             'R2': # The tails
-                topic_name: T8/point
+                topic_name: R2/point
                 frame_id: base
-                init_pos: [0.0392, 0.0046, 0.2158] # dummy
+                init_pos: [.0, .0, .0] # dummy
 markers:
     'T3': # the head of the chopsticks that are mounted with two markers
         topic_name: T3/point
         frame_id: base
-        init_pos:  [0.464, -0.006, 0.183] # Note this is in optitrack frame, look up the coordinate in Motive Software.
+        init_pos:  [0.464, -0.006, 0.183] # In optitrack frame, look up the coordinate in Motive Software and paste here directly!
     'T4': # the tail
         topic_name: T4/point
         frame_id: base
         init_pos:  [0.462, -0.0017, 0.3841]
     'Ball': # the marker to pick up
-        topic_name: T5/point
+        topic_name: Ball/point
         frame_id: base
         init_pos: [0.639, -0.007, 0.311]
 
