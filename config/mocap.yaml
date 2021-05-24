@@ -11,47 +11,47 @@ rigid_bodies:
         use_new_coordinates: false
         publish_markers: true
         markers:
-            'M1': # the order of point is determined by Optitrack software
-                topic_name: M1/point # M1 should be the one near tip
+            'T0': # the order of point is determined by Optitrack software
+                topic_name: T0/point # M1 should be the one near tip
                 frame_id: base
-                init_pos: [0.0390, 0.00425, 0.3802] # dummy
-            'M2': # The middle
-                topic_name: M2/point
+                init_pos: [.0, .0, .0] # dummy
+            'T1': # The middle
+                topic_name: T1/point
                 frame_id: base
-                init_pos: [0.0227, 0.004656, 0.3408] # dummy
-            'M3': # The tails
-                topic_name: M3/point
+                init_pos: [.0, .0, .0] # dummy
+            'T2': # The tails
+                topic_name: T2/point
                 frame_id: base
-                init_pos: [0.0392, 0.0046, 0.2158] # dummy
+                init_pos: [.0, .0, .0] # dummy
     '2':
         use_new_coordinates: false
         publish_markers: true
         markers:
-            'M7': # the order of point is determined by Optitrack software
-                topic_name: M7/point # should be the alone point on rigid body tracker
+            'R0': # the order of point is determined by Optitrack software
+                topic_name: T6/point # should be the alone point on rigid body tracker
                 frame_id: base
                 init_pos: [0.0390, 0.00425, 0.3802] # dummy
-            'M8': # The middle
-                topic_name: M8/point
+            'R1': # The middle
+                topic_name: T7/point
                 frame_id: base
                 init_pos: [0.0227, 0.004656, 0.3408] # dummy
-            'M9': # The tails
-                topic_name: M9/point
+            'R2': # The tails
+                topic_name: T8/point
                 frame_id: base
                 init_pos: [0.0392, 0.0046, 0.2158] # dummy
 markers:
-    'M4': # this has been modified, the original value is [0.0, 0.0, 0.0]
-        topic_name: M4/point
+    'T3': # the head of the chopsticks that are mounted with two markers
+        topic_name: T3/point
         frame_id: base
-        init_pos:  [0.297, -0.004982, 0.376] # Note this is in optitrack frame, look up the coordinate in Motive Software.
-    'M5': # this has been modified, the original value is [0.0, 0.005, 0.06]
-        topic_name: M5/point
+        init_pos:  [0.464, -0.006, 0.183] # Note this is in optitrack frame, look up the coordinate in Motive Software.
+    'T4': # the tail
+        topic_name: T4/point
         frame_id: base
-        init_pos:  [0.4966, 0.00, 0.381]
-    'M6': # this is the marker to pick up
-        topic_name: M6/point
+        init_pos:  [0.462, -0.0017, 0.3841]
+    'Ball': # the marker to pick up
+        topic_name: T5/point
         frame_id: base
-        init_pos: [0.6175, 0.00, 0.233]
+        init_pos: [0.639, -0.007, 0.311]
 
 optitrack_config:
         multicast_address: 224.0.0.1
