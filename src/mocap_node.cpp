@@ -134,7 +134,7 @@ void trackMarkers(int num_mocap_markers, Marker* mocap_markers, MarkerArray& pub
     if(unassigned[i])
     {
       published_unlabeled_markers[i].disconnectedFrames += 1;
-      ROS_INFO("Lost unlabeled marker %d for %d frames", //, which was at %.4f, %.4f, %.4f",
+      ROS_INFO("Lost unlabeled marker index (%d) for %d frames", //, which was at %.4f, %.4f, %.4f",
                 i, published_unlabeled_markers[i].disconnectedFrames);
                 //currentMarker.x, currentMarker.y, currentMarker.z);
     }

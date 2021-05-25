@@ -124,7 +124,7 @@ void PublishedRigidBody::updateMarker(Marker* observe_markers,
   }
   else
   {
-    ROS_INFO("Rigidbody marker info mismatch: observed incorrect number of markers");
+    ROS_INFO("Rigidbody marker info mismatch: observed %d markers (incorrect number of markers)", observe_num_markers);
   }
 }
 void PublishedRigidBody::publish(RigidBody &body, MarkerArray & marker_array)

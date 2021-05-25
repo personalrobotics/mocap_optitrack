@@ -3,14 +3,31 @@
 # Identifier corresponds to Trackable ID set in Tracking Tools
 #
 rigid_bodies:
-    '1':
+    # MATCH the order of points to select, when creating rigid body in Optitrack Software !!!
+    '1': # the end effector tracker
+        use_new_coordinates: false
+        publish_markers: true
+        markers:
+            'R0': # the point cloest to chopsticks tip
+                topic_name: R0/point
+                frame_id: base
+                init_pos: [.0, .0, .0] # dummy
+            'R1': # The middle
+                topic_name: R1/point
+                frame_id: base
+                init_pos: [.0, .0, .0] # dummy
+            'R2': # The tails
+                topic_name: R2/point
+                frame_id: base
+                init_pos: [.0, .0, .0] # dummy
         #pose: chop/pose
         #pose2d: chop/ground_pose
         #child_frame_id: chop/base_link
         #parent_frame_id: map
+    '2': # the leader chopsticks
         use_new_coordinates: false
         publish_markers: true
-        markers: # Note the order of points to select, when adding rigid body in Optitrack Software
+        markers:
             'T0':
                 topic_name: T0/point # should be the one near tip
                 frame_id: base
@@ -23,32 +40,17 @@ rigid_bodies:
                 topic_name: T2/point
                 frame_id: base
                 init_pos: [.0, .0, .0] # dummy
-    '2':
-        use_new_coordinates: false
-        publish_markers: true
-        markers:
-            'R0': # the order of point is determined by Optitrack software
-                topic_name: R0/point # the point cloest to chopsticks tip
-                frame_id: base
-                init_pos: [.0, .0, .0] # dummy
-            'R1': # The middle
-                topic_name: R1/point
-                frame_id: base
-                init_pos: [.0, .0, .0] # dummy
-            'R2': # The tails
-                topic_name: R2/point
-                frame_id: base
-                init_pos: [.0, .0, .0] # dummy
 markers:
+    # In optitrack frame, look up the coordinate in Motive Software and paste here directly!
     'T3': # the head of the chopsticks that are mounted with two markers
         topic_name: T3/point
         frame_id: base
-        init_pos:  [0.464, -0.006, 0.183] # In optitrack frame, look up the coordinate in Motive Software and paste here directly!
-    'T4': # the tail
+        init_pos:  [0.58, -0.006, 0.55]
+    'T4': # the tail of the chopsticks that are mounted with two markers
         topic_name: T4/point
         frame_id: base
-        init_pos:  [0.462, -0.0017, 0.3841]
-    'Ball': # the marker to pick up
+        init_pos:  [0.78, -0.0017, 0.56]
+    'Ball': # the marker ball to pick up
         topic_name: Ball/point
         frame_id: base
         init_pos: [0.639, -0.007, 0.311]
