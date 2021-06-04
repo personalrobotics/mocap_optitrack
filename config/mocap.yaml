@@ -10,15 +10,15 @@ rigid_bodies:
         markers:
             'R0': # the point cloest to chopsticks tip
                 topic_name: R0/point
-                frame_id: base
+                frame_id: optitrack
                 init_pos: [.0, .0, .0] # dummy
             'R1': # The middle
                 topic_name: R1/point
-                frame_id: base
+                frame_id: optitrack
                 init_pos: [.0, .0, .0] # dummy
             'R2': # The tails
                 topic_name: R2/point
-                frame_id: base
+                frame_id: optitrack
                 init_pos: [.0, .0, .0] # dummy
         #pose: chop/pose
         #pose2d: chop/ground_pose
@@ -30,30 +30,33 @@ rigid_bodies:
         markers:
             'T0':
                 topic_name: T0/point # should be the one near tip
-                frame_id: base
+                frame_id: optitrack
                 init_pos: [.0, .0, .0] # dummy
             'T1': # The middle
                 topic_name: T1/point
-                frame_id: base
+                frame_id: optitrack
                 init_pos: [.0, .0, .0] # dummy
             'T2': # The tails
                 topic_name: T2/point
-                frame_id: base
+                frame_id: optitrack
                 init_pos: [.0, .0, .0] # dummy
 markers:
+    # The order of points matter (because hebi_teleop makes assumption about the order of points)
+    # However, the yaml load module will sort the items by their entry keys (e.g. from A to Z)
+    # Pay attention to not change the resulted order when you change the names
     # In optitrack frame, look up the coordinate in Motive Software and paste here directly!
-    'T3': # the head of the chopsticks that are mounted with two markers
-        topic_name: T3/point
-        frame_id: base
-        init_pos:  [0.58, -0.006, 0.55]
-    'T4': # the tail of the chopsticks that are mounted with two markers
-        topic_name: T4/point
-        frame_id: base
-        init_pos:  [0.78, -0.0017, 0.56]
     'Ball': # the marker ball to pick up
         topic_name: Ball/point
-        frame_id: base
+        frame_id: optitrack
         init_pos: [0.639, -0.007, 0.311]
+    'T3': # the head of the chopsticks that are mounted with two markers
+        topic_name: T3/point
+        frame_id: optitrack
+        init_pos:  [0.31, -0.006, 0.07]
+    'T4': # the tail of the chopsticks that are mounted with two markers
+        topic_name: T4/point
+        frame_id: optitrack
+        init_pos:  [0.51, -0.0017, 0.08]
 
 optitrack_config:
         multicast_address: 224.0.0.1
