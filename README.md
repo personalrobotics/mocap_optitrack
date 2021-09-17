@@ -5,22 +5,25 @@ This repo builds on top of `mocap_optitrack` library. It adds support for
 - Publishing model markers (that belong to rigid body) along side unlabeled markers
 
 # Calibrating the Mocap System (Wanding)
+
 1. On the Optitrack menu, select Edit -> Reset Application Setting.
-2. View -> Calibration
-3. Remove or cover anything in the workspace which appears on the cameras. 
-4. Click "Mark Visible" in the Camera Calibration pane under Calibration. It will store any existing point as "invalid" points forever (unless you reset the application setting).
-5. Select the right wand size in the Camera Calibration pane. Usually we use the 250mm wand.
-6. Click “Start Wanding” 
+2. Try your best to remove or cover everything in the workspace that appears as tracking points on the cameras.
+3. View -> Calibration. In Camera Calibration pane, select `Mark Visible`. It will store any existing point as "invalid" points forever (unless you reset the application setting).
+4. Select the right wand size in the Camera Calibration pane. Usually we use the 250mm wand.
+5. Click “Start Wanding” in the Camera Calibration pane
+
 	![](figures/start-wanding.png)
-7. Move the wand around the workspace. You need to (1) have a good coverage all over the workspace. (2) focus on specific cameras as needed so each camera has at least a thousand samples. (3) focus on the core workspace (e.g. above the workstation and around the robot calibration region)
+
+6. Move the wand around the workspace. You need to (1) have a good coverage all over the workspace. (2) focus on specific cameras as needed so each camera has at least a thousand samples. (3) focus on the core workspace (e.g. above the workstation and around the robot calibration region)
+
 	![](figures/camera-samples.png)
-8. After there is at least four thousand samples for each camera, click “Calculate”
-5. The Calibration Result should be excellent or exceptional (exceptional is better). Click “Apply” in the Calibration Result pop-up window.
-6. Place the Optitrack ground plane on its desginated position on the table.
-7. Make sure the three ground plane points are visible. In the Camera Calibration window, under Ground Plane, click “Set Ground Plane”. It will prompt you to save, and you can use the default file name.
-	
+
+7. After there is at least a thousand samples for each camera, click “Calculate”
+8. The Calibration Result should be excellent or exceptional (exceptional is better). Click “Apply” in the Calibration Result pop-up window.
+9. Place the Optitrack ground plane on its desginated position on the table. All three points should be visible to >5 cameras.
+10. In the Camera Calibration window, under Ground Plane, click “Set Ground Plane”. It will prompt you to save, and you can use the default file name.
     ![](figures/ground-plane.png)
-    
+
 # Create Rigid Body
 
 For the tycho robot we usually create two rigid bodies in this order.
@@ -35,9 +38,9 @@ Because of the demo setup, it’s important to create the arm tracker rigid body
 # Stream Mocap Data
 
 1. In Optitrack software: Click View -> DataStreaming
-2. In the new Streaming window, 
+2. In the new Streaming window,
 
-- For the "Network Interface / Local Interface" field write the machine’s IP address. 
+- For the "Network Interface / Local Interface" field write the machine’s IP address.
 - For the “Multicast Interface”, match its value with `multicast_address` in [`config/mocap.yaml`](config/mocap.yaml)
 
 Roughly the settings match those in the pictures below:
@@ -54,7 +57,7 @@ Roughly the settings match those in the pictures below:
 1. Ensure you have created the two rigid body as described above.
 
 2. When you launch the teleoperation demo, you will need to place the leader chopsticks at a designated area on the table. To track the points on those chopsticks, you need to specify their initial tracking positions in [`config/mocap.yaml`](config/mocap.yaml). Edit this file so that `T3` and `T4` markers have their init_pos match the starting points of the chopstick with two markers, and `T5` (or `Ball`) reflects the position of the tracking ball to pick up.
-	![](figures/labeled-trackers.png) 
+	![](figures/labeled-trackers.png)
 
 3. Notes: the software transforms point poses from optitrack frame to map frame in `mocap_datapackets.cpp`, `get_3d_point()`. Currently we do not modify the transformation. Instead. we rely on an explicit calibration (hebi_calibration) to find the correct transformation. The client side will apply the transformation as needed.
 
