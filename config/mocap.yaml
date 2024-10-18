@@ -52,11 +52,13 @@ markers:
     'T3': # the head of the chopsticks that are mounted with two markers
         topic_name: T3/point
         frame_id: optitrack
-        init_pos:  [0.31, -0.006, 0.07]
+        # init_pos:  [0.31, -0.006, 0.07]
+        init_pos:  [0.125, 0.007,  0.375]  # modified for mocap file 2023-12-20 02.28.28 PM
     'T4': # the tail of the chopsticks that are mounted with two markers
         topic_name: T4/point
         frame_id: optitrack
-        init_pos:  [0.51, -0.0017, 0.08]
+        # init_pos:  [0.51, -0.0017, 0.08]
+        init_pos:  [ 0.324, 0.008,  0.382]  # modified for mocap file 2023-12-20 02.28.28 PM
 
 optitrack_config:
         multicast_address: 224.0.0.1
